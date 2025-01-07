@@ -48,7 +48,6 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     erldns
     exometer_core
     exometer_graphite
-    exometer_lager
     folsom
     gen_server2
     gen_smtp
@@ -59,7 +58,6 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     idna
     jiffy
     jsx
-    lager
     lbm_kv
     locus
     meck
