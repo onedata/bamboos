@@ -159,7 +159,7 @@ def _couchbase_up(cluster_name, db_nodes, dns_servers, uid, configurator,
         return db_node_mappings, {}
 
     [dns] = dns_servers
-    couchbase_output = couchbase.up('couchbase/server:community-4.5.1', dns,
+    couchbase_output = couchbase.up('couchbase/server:community-6.6.0', dns,
                                     uid, cluster_name, len(db_node_mappings),
                                     configurator.couchbase_buckets(),
                                     configurator.couchbase_ramsize(),
