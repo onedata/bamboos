@@ -23,6 +23,7 @@ SWIFT_COMMAND = \
       --os-identity-api-version 3 \
       {1}'
 
+
 def _get_swift_ready(ip):
     def _swift_ready(container):
         try:

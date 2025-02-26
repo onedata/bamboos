@@ -12,8 +12,7 @@ main([Cookie, Node, Name, AuthUrl, ContainerName, ProjectName, Username, Passwor
     UserCtx = #{
         <<"username">> => list_to_binary(Username),
         <<"password">> => list_to_binary(Password),
-        <<"projectName">> => list_to_binary(ProjectName),
-
+        <<"projectName">> => list_to_binary(ProjectName)
     },
     {ok, Helper} = safe_call(NodeAtom, helper, new_helper, [
         <<"swift">>,
