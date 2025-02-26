@@ -3,7 +3,7 @@
 
 -export([main/1]).
 
-main([Cookie, Node, Name, AuthUrl, ContainerName, TenantName, Username, Password,
+main([Cookie, Node, Name, AuthUrl, ContainerName, ProjectName, Username, Password,
     BlockSize, StoragePathType]) ->
 
     erlang:set_cookie(node(), list_to_atom(Cookie)),
@@ -11,14 +11,15 @@ main([Cookie, Node, Name, AuthUrl, ContainerName, TenantName, Username, Password
 
     UserCtx = #{
         <<"username">> => list_to_binary(Username),
-        <<"password">> => list_to_binary(Password)
+        <<"password">> => list_to_binary(Password),
+        <<"projectName">> => list_to_binary(ProjectName),
+
     },
     {ok, Helper} = safe_call(NodeAtom, helper, new_helper, [
         <<"swift">>,
         #{
             <<"authUrl">> => list_to_binary(AuthUrl),
             <<"containerName">> => list_to_binary(ContainerName),
-            <<"tenantName">> => list_to_binary(TenantName),
             <<"blockSize">> => list_to_binary(BlockSize),
             <<"storagePathType">> => list_to_binary(StoragePathType)
         },
