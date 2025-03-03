@@ -65,7 +65,7 @@ def default_image(type):
         'cephrados': 'onedata/ceph',
         's3': 'onedata/minio:v1',
         'swift': 'onedata/dockswift',
-        'glusterfs': 'gluster/gluster-centos:gluster4u1_centos7',
+        'glusterfs': 'onedata/glusterfs:v1',
         'webdav': 'onedata/sabredav:v1',
         'xrootd': 'onedata/xrootd:v2',
         'nfs': 'onedata/nfs:v1',
