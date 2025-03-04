@@ -42,6 +42,7 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     cowlib
     cberl
     dns
+    dns_erlang
     edown
     enif_protobuf
     esaml
@@ -62,7 +63,9 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     locus
     meck
     metrics
+    nodefinder
     observer_cli
+    opentelemetry_api
     parse_trans
     plain_fsm
     poolboy
