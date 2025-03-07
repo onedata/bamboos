@@ -53,10 +53,6 @@ def _node_up(image, volumes, name, uid, transport, mountpoint):
                 output=True, stdout=sys.stderr)
         output = docker.exec_(container, [
             'bash', '-c',
-            "gluster volume set %s nfs.ports-insecure on"%(volume)],
-                output=True, stdout=sys.stderr)
-        output = docker.exec_(container, [
-            'bash', '-c',
             "gluster volume set %s server.allow-insecure on"%(volume)],
                 output=True, stdout=sys.stderr)
 
