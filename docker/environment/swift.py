@@ -13,20 +13,27 @@ import subprocess
 from .timeouts import *
 from . import common, docker
 
-SWIFT_COMMAND = 'swift --auth-version 2 -A http://{0}:5000/v2.0 -K swift ' \
-                '-U swift --os-tenant-name service {1}'
+SWIFT_COMMAND = \
+    'swift --os-auth-url http://{0}:5000/v3 \
+      --os-project-name swift-project \
+      --os-username swift \
+      --os-password veryfast \
+      --os-user-domain-name Default \
+      --os-project-domain-name Default \
+      --os-identity-api-version 3 \
+      {1}'
 
 
 def _get_swift_ready(ip):
     def _swift_ready(container):
         try:
+            cmd = SWIFT_COMMAND.format(ip, 'stat')
             output = docker.exec_(container, [
-                'bash', '-c', SWIFT_COMMAND.format(ip, 'list 2>&1')],
-                                  output=True, stdout=sys.stderr)
+                'bash', '-c', cmd], output=True, stdout=sys.stderr)
         except subprocess.CalledProcessError:
             return False
         else:
-            return bool(output == '')
+            return 'Account:' in output
 
     return _swift_ready
 
@@ -38,39 +45,35 @@ def _node_up(image, containers, name, uid):
         image=image,
         hostname=hostname,
         name=hostname,
-        privileged=True,
+        privileged=False,
         detach=True,
         tty=True,
         interactive=True,
-        envs={'INITIALIZE': 'yes'},
-        run_params=["--entrypoint", "bash"])
+        envs={'S6_LOGGING': '0'},
+        run_params=[])
 
     settings = docker.inspect(container)
     ip = settings['NetworkSettings']['IPAddress']
-
-    docker.exec_(container,
-                 ['bash', '-c',
-                  'IPADDRESS={0} /sbin/my_init > /tmp/run.log'.format(ip)],
-                 detach=True)
 
     common.wait_until(_get_swift_ready(ip), [container],
                       SWIFT_READY_WAIT_SECONDS)
     # Sometimes swift returns internal server error few times
     # after first successful request
-    time.sleep(3)
+    time.sleep(2)
     common.wait_until(_get_swift_ready(ip), [container],
                       SWIFT_READY_WAIT_SECONDS)
 
     for c in containers:
-        assert '' == docker.exec_(container,
-                                  SWIFT_COMMAND.format(ip, 'post ' + c).split(),
-                                  output=True, stdout=sys.stderr)
+        cmd = SWIFT_COMMAND.format(ip, 'post ' + c).split()
+        docker.exec_(container, cmd, output=True, stdout=sys.stderr)
 
     return {
         'docker_ids': [container],
         'user_name': 'swift',
-        'password': 'swift',
-        'tenant_name': 'service',
+        'password': 'veryfast',
+        'project_name': 'swift-project',
+        'user_domain_name': 'Default',
+        'project_domain_name': 'Default',
         'host_name': ip,
         'keystone_port': 5000,
         'swift_port': 8080,
