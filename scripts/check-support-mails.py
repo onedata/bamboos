@@ -32,13 +32,13 @@ SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
 # Message to send
-MESSAGE_TEXT = "Hello, Slack! 🚀"
+MESSAGE_TEXT = ""
 
 # Slack API endpoint
-url = "https://slack.com/api/chat.postMessage"
+URL = "https://slack.com/api/chat.postMessage"
 
 # Headers and payload
-headers = {
+HEADERS = {
     "Authorization": f"Bearer {SLACK_BOT_TOKEN}",
     "Content-Type": "application/json"
 }
@@ -66,7 +66,7 @@ for email_id in email_ids:
             if isinstance(subject, bytes):
                 subject = subject.decode(encoding or "utf-8")
 
-            print("Subject:", subject)
+            print("New mail received. Subject:", subject)
             message_text = "New mail received. Subject: " + subject
             # Print email sender
             print("From:", msg.get("From"))
@@ -88,12 +88,12 @@ for email_id in email_ids:
             message_text += "```"
             print("=" * 50)
     payload = {
-    "channel": CHANNEL_ID,
-    "text": message_text
+        "channel": CHANNEL_ID,
+        "text": message_text
     }
 
     # Send the message
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(URL, json=payload, headers=HEADERS)
 
     # Print response
     print(response.json())
