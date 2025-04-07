@@ -31,9 +31,6 @@ PASSWORD = os.getenv("PASSWORD")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
-# Message to send
-MESSAGE_TEXT = ""
-
 # Slack API endpoint
 URL = "https://slack.com/api/chat.postMessage"
 
