@@ -215,9 +215,9 @@ def create_storages(storages, op_nodes, op_config, bindir, storages_dockers):
             config = storages_dockers['swift'][storage['name']]
             command = ['escript', script_paths['swift'], cookie,
                        first_node, storage['name'],
-                       'http://{0}:{1}/v2.0/tokens'.format(
+                       'http://{0}:{1}/v3'.format(
                            config['host_name'], config['keystone_port']),
-                       storage['container'], config['tenant_name'],
+                       storage['container'], config['project_name'],
                        config['user_name'], config['password'],
                        storage.get('block_size', '10485760'),
                        storage.get('storage_path_type', 'flat')]
