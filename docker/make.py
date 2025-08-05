@@ -263,5 +263,6 @@ ret = docker.run(tty=True,
                  image=args.image,
                  privileged=args.privileged,
                  cpuset_cpus=args.cpuset_cpus,
+                 add_host={"git.onedata.org": "10.87.23.110"},
                  command=['python3', '-c', command])
 sys.exit(ret)
