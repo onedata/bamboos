@@ -140,8 +140,21 @@ parser.add_argument(
     help='CPUs in which to allow execution (0-3, 0,1)',
     dest='cpuset_cpus')
 
+parser.add_argument(
+    '--add-git-host',
+    action='store',
+    default='10.87.23.110',
+    help='IP address for git.onedata.org host mapping',
+    dest='add_git_host')
+
 [args, pass_args] = parser.parse_known_args()
 dockers_config.ensure_image(args, 'image', 'builder')
+
+# Handle git host IP configuration with proper precedence
+# Priority: CLI argument > environment variable > default
+git_host_ip = args.add_git_host  # starts with default from argparse
+if 'bamboo.gitOnedataOrgIP' in os.environ and not any('--add-git-host' in arg for arg in sys.argv):
+    git_host_ip = os.environ['bamboo.gitOnedataOrgIP']
 
 # Check if make.py is run on a bamboo agent
 # If the script is run on a bamboo agent git-cache-http-server will be used.
@@ -263,6 +276,6 @@ ret = docker.run(tty=True,
                  image=args.image,
                  privileged=args.privileged,
                  cpuset_cpus=args.cpuset_cpus,
-                 add_host={"git.onedata.org": "10.87.23.110"},
+                 add_host={"git.onedata.org": git_host_ip},
                  command=['python3', '-c', command])
 sys.exit(ret)
