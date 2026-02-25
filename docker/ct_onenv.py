@@ -189,7 +189,9 @@ def prepare_ct_command(args):
     if args.cover:
         ct_command.extend(["-cover", COVER_TMP_SPEC])
 
-    ct_command.extend(["-erl_args", "-enable-feature", "maybe_expr"])
+    # path to custom test node config adjusting logger behaviour
+    config_path = os.path.abspath("bamboos/env_configurator/test.config")
+    ct_command.extend(["-erl_args", "-enable-feature", "maybe_expr", "-config", config_path])
 
     return ct_command
 

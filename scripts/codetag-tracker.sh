@@ -41,14 +41,13 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     cowboy
     cowlib
     cberl
-    dns
+    dns_erlang
     edown
     enif_protobuf
     esaml
     erldns
     exometer_core
     exometer_graphite
-    exometer_lager
     folsom
     gen_server2
     gen_smtp
@@ -59,12 +58,13 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     idna
     jiffy
     jsx
-    lager
     lbm_kv
     locus
     meck
     metrics
+    nodefinder
     observer_cli
+    opentelemetry_api
     parse_trans
     plain_fsm
     poolboy
