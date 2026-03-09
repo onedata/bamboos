@@ -41,7 +41,7 @@ EXCLUDED_THIRD_PARTY_DEPS=(
     cowboy
     cowlib
     cberl
-    dns_erlang
+    dns
     edown
     enif_protobuf
     esaml
