@@ -2,6 +2,7 @@
 ###-------------------------------------------------------------------
 ### @author Lukasz Opiola, Darin Nikolow
 ### @copyright (C) 2021 ACK CYFRONET AGH
+### @copyright (C) 2026: Onedata (onedata.org)
 ### This software is released under the MIT license
 ### cited in 'LICENSE.txt'.
 ### @end
@@ -25,6 +26,10 @@ ALL_REPOS=(
     onepanel
     op-worker
     oz-worker
+    onedatarestfs
+    fs.onedatafs
+    onedata-acceptance
+    onedatarestfsspec
 )
 
 bump one-env
