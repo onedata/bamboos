@@ -8,7 +8,7 @@
 ### @end
 ###-------------------------------------------------------------------
 ### @doc
-### This script iterates through a static list of all repos that include bamboos
+### This script iterates through a static list of all repos that include one-env
 ### as a submodule and bumps it to the HEAD of given branch, creating a commit
 ### and pushing the changes. The list of repos must be manually maintained -
 ### whenever a new repo with bamboos is added, it should be added here too.
@@ -22,36 +22,14 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd -P)
 . ${SCRIPT_DIR}/bump-common.sh
 
 ALL_REPOS=(
-    appmock
-    cluster-manager
-    cluster-worker
-    ctool
-    fs-onedatafs
-    gui
-    helpers
-    homepage
-    ioreplay
-    macaroons
-    oneclient-pkg
-    onedata-acceptance
-    onedata-documentation
-    onedatafilerestclient
-    onedatafs-jupyter
-    onedatarestfs
-    onenv-ct
+    oneclient
     onepanel
-    onepanel-gui
-    onepanel-swagger
-    oneprovider-gui
-    oneprovider-pkg
-    oneprovider-swagger
-    onezone-gui
-    onezone-gui-plugin-ecrin
-    onezone-pkg
-    onezone-swagger
     op-worker
     oz-worker
-    rtransfer_link
+    onedatarestfs
+    fs.onedatafs
+    onedata-acceptance
+    onedatarestfsspec
 )
 
-bump bamboos
+bump one-env
