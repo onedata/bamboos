@@ -27,7 +27,6 @@ ALL_REPOS=(
     op-worker
     oz-worker
     onedatarestfs
-    fs-onedatafs
     onedata-acceptance
     onedatarestfsspec
 )
