@@ -31,6 +31,7 @@ import boto3
 from typing import Callable, Optional, Any, Tuple
 import artifact_utils
 from artifact_utils import *
+import os
 
 
 DEVELOP_BRANCH = 'develop'
@@ -226,12 +227,29 @@ def main():
 
         ssh.close()
     else:
-        s3_session = boto3.session.Session()
+        # Define the standard path to AWS credentials
+        # os.path.expanduser("~") ensures this works on both Linux/Mac and Windows
+        creds_path = os.path.expanduser("~/.aws/credentials")
 
-        s3_res = s3_session.resource(
-            service_name='s3',
-            endpoint_url=args.s3_url
-        )
+        if os.path.exists(creds_path):
+            # Use the default credentials from the file
+            print("Found ~/.aws/credentials. Using local profile.")
+            s3_session = boto3.Session()
+            s3_res = s3_session.resource(
+                service_name='s3',
+                endpoint_url=args.s3_url
+            )
+        else:
+            # Use hardcoded s3proxy as a fallback
+            print("Credentials file not found. Usung s3proxy.onedata.org.")
+            s3_session = boto3.Session(
+                aws_access_key_id='dummy',
+                aws_secret_access_key='dummy'
+            )
+            s3_res = s3_session.resource(
+                service_name='s3',
+                endpoint_url='https://s3proxy.onedata.org'
+            )
         s3_download_specific_or_default(s3_res, args.s3_bucket, args.plan, args.branch,
                                         args.artifact_name, args.target_file_path, args.fallback_branch)
 
