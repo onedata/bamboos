@@ -29,6 +29,7 @@ ALL_REPOS=(
     onedatarestfs
     onedata-acceptance
     onedatarestfsspec
+    onedatafilerestclient
 )
 
 bump one-env
