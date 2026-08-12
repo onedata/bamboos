@@ -73,6 +73,12 @@ for file in glob.glob('**/logs/*/surefire.xml', recursive=True):
             match = re.match('(init|end)_per_(suite|group)', test.attrib['name'])
             if match is not None:
                 suite.remove(test)
+            elif test.get('group'):
+                # A suite may run the same case function in several groups, each
+                # supplying a different parametrisation. Report readers key on
+                # classname/name, so leaving classname empty makes those runs
+                # indistinguishable from one another.
+                test.set('classname', test.attrib['group'])
     tree.write(file)
 
 sys.exit(ret)
