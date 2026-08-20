@@ -196,6 +196,30 @@ def logs(container, docker_host=None):
                                    stderr=subprocess.STDOUT)
 
 
+def stop(containers, docker_host=None, stop_timeout=None, signal=None,
+         command_timeout=None, stderr=None):
+    cmd = ['docker', 'stop']
+
+    if signal is not None:
+        cmd.extend(['--signal', signal])
+
+    if stop_timeout is not None:
+        cmd.extend(['--timeout', str(stop_timeout)])
+
+    if isinstance(containers, str):
+        cmd.append(containers)
+    else:
+        cmd.extend(containers)
+
+    if docker_host:
+        cmd = wrap_in_ssh_call(cmd, docker_host)
+
+    if command_timeout is not None:
+        cmd = add_timeout_cmd(cmd, command_timeout)
+
+    subprocess.check_call(cmd, stderr=stderr)
+
+
 def remove(containers, docker_host=None, force=False,
            link=False, volumes=False, timeout=None, stderr=None):
     cmd = ['docker']
