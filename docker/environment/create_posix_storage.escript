@@ -7,23 +7,19 @@ main([Cookie, Node, Name, MountPoint, StoragePathType]) ->
     erlang:set_cookie(node(), list_to_atom(Cookie)),
     NodeAtom = list_to_atom(Node),
 
-    UserCtx = #{
+    CredentialsParams = #{
         <<"uid">> => <<"0">>,
         <<"gid">> => <<"0">>
     },
-    {ok, Helper} = safe_call(NodeAtom, helper, new_helper, [
+    safe_call(NodeAtom, initializer, create_storage, [
+        list_to_binary(Name),
         <<"posix">>,
         #{
             <<"mountPoint">> => list_to_binary(MountPoint),
             <<"storagePathType">> => list_to_binary(StoragePathType)
         },
-        UserCtx
-    ]),
-
-    % use storage name as its id
-    StorageId = safe_call(NodeAtom, initializer, normalize_storage_name, [list_to_binary(Name)]),
-    {ok, StorageId} = safe_call(NodeAtom, storage_config, create, [StorageId, Helper, undefined]),
-    safe_call(NodeAtom, storage, on_storage_created, [StorageId]).
+        CredentialsParams
+    ]).
 
 safe_call(Node, Module, Function, Args) ->
     true = net_kernel:hidden_connect_node(Node),
