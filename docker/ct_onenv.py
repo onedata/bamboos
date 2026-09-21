@@ -88,6 +88,10 @@ def configure_cover(args):
         print("----------------------------------------------------")
         sys.stdout.flush()
 
+    if args.cover and args.performance:
+        print("NOTE: cover is disabled as performance tests are run")
+        args.cover = False
+
     if args.cover:
         print("----------------------------------------------------")
         print(
