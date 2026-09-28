@@ -134,7 +134,7 @@ echo "Removing stalled loopdevices"
 # Use ubuntu 14.10 as newer versions don't have dmsetup.
 # For unknown reasons does not work with execute_with_timeout.
 timeout --kill-after ${DELETE_LOOP_TIMEOUT} ${DELETE_LOOP_TIMEOUT} \
-        docker run --rm --privileged ubuntu:14.10 sh -c \
+        docker run --rm --privileged docker.onedata.org/ubuntu:14.10 sh -c \
         'losetup -D; dmsetup ls | cut -f 1 | grep -F osd-- | xargs -tr -n 1 dmsetup remove;'
 
 echo "Done"
