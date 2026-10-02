@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # coding=utf-8
-"""Author: Krzysztof Trzepla
+"""Author: Krzysztof Trzepla, Jakub Liput
 Copyright (C) 2016 ACK CYFRONET AGH
+Copyright (C) 2026 Onedata (onedata.org)
 This software is released under the MIT license cited in 'LICENSE.txt'
 
 Runs docker build process and publish image to a private docker repository.
@@ -16,14 +17,14 @@ import re
 import subprocess
 import os
 
-from environment import docker
+from environment import docker_p3
 
 
 def cmd(args):
     """Executes shell command and returns result without trailing newline.
     Standard error is redirected to /dev/null."""
 
-    with open('/dev/null', 'w') as dev_null:
+    with open('/dev/null', 'w', encoding='utf-8') as dev_null:
         result = subprocess.check_output(args, stderr=dev_null)
     if isinstance(result, bytes):
         result = result.decode()
@@ -33,7 +34,7 @@ def cmd(args):
 def get_repository_name():
     """Returns repository name."""
 
-    remote = subprocess.check_output(['git', 'remote', '-v'])
+    remote = cmd(['git', 'remote', '-v'])
     remote = [r for r in remote.split('\n') if r.startswith('origin')]
     return remote[0].split('/')[-1].split('.')[0]
 
@@ -189,25 +190,25 @@ if __name__ == '__main__':
         args.tags)])
 
     if args.user and args.password:
-        docker.login(args.user, args.password, args.repository)
+        docker_p3.login(args.user, args.password, args.repository)
 
     image = '{0}/{1}:{2}'.format(args.repository, args.name, tags[0][1])
 
-    docker.build_image(image, pass_args)
+    docker_p3.build_image(image, pass_args)
     images = [(tags[0][0], image)]
 
     for tag in tags[1:]:
         image_tag = '{0}/{1}:{2}'.format(args.repository, args.name, tag[1])
-        docker.tag_image(image, image_tag)
+        docker_p3.tag_image(image, image_tag)
         images.append((tag[0], image_tag))
 
     unique_images = list(set([x for _,x in images]))
     for image in unique_images:
         if args.publish:
-            docker.push_image(image)
+            docker_p3.push_image(image)
 
         if args.remove:
-            docker.remove_image(image)
+            docker_p3.remove_image(image)
 
     write_short_report(args.short_report, images)
     write_report(args.report, args.name, images, args.publish)

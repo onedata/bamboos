@@ -159,13 +159,21 @@ def _couchbase_up(cluster_name, db_nodes, dns_servers, uid, configurator,
         return db_node_mappings, {}
 
     [dns] = dns_servers
+    num_vbuckets = couchbase.TEST_NUM_VBUCKETS if _is_standard_test() else None
     couchbase_output = couchbase.up('couchbase/server:community-6.6.0', dns,
                                     uid, cluster_name, len(db_node_mappings),
                                     configurator.couchbase_buckets(),
                                     configurator.couchbase_ramsize(),
-                                    docker_host)
+                                    docker_host, num_vbuckets)
 
     return db_node_mappings, couchbase_output
+
+
+def _is_standard_test():
+    """Mirrors ctool's performance:is_standard_test/0 - ct_run.py passes the
+    test type as OS environment variables of the test runner."""
+    test_type_envs = ['performance', 'stress', 'stress_no_clearing']
+    return all(os.environ.get(env) != 'true' for env in test_type_envs)
 
 
 def _db_driver(config):

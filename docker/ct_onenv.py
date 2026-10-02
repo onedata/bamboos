@@ -88,6 +88,10 @@ def configure_cover(args):
         print("----------------------------------------------------")
         sys.stdout.flush()
 
+    if args.cover and args.performance:
+        print("NOTE: cover is disabled as performance tests are run")
+        args.cover = False
+
     if args.cover:
         print("----------------------------------------------------")
         print(
@@ -189,7 +193,9 @@ def prepare_ct_command(args):
     if args.cover:
         ct_command.extend(["-cover", COVER_TMP_SPEC])
 
-    ct_command.extend(["-erl_args", "-enable-feature", "maybe_expr"])
+    # path to custom test node config adjusting logger behaviour
+    config_path = os.path.abspath("bamboos/env_configurator/test.config")
+    ct_command.extend(["-erl_args", "-enable-feature", "maybe_expr", "-config", config_path])
 
     return ct_command
 

@@ -332,7 +332,9 @@ elif args.cover:
             with open(file, 'w') as jsonFile:
                 jsonFile.write(json.dumps(data))
 
-ct_command.extend(['-erl_args', '-enable-feature', 'maybe_expr'])
+# path to custom test node config adjusting logger behaviour
+config_path = os.path.abspath("bamboos/env_configurator/test.config")
+ct_command.extend(["-erl_args", "-enable-feature", "maybe_expr", "-config", config_path])
 
 command = '''
 import os, shutil, subprocess, sys, stat

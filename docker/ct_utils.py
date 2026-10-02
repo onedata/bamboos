@@ -73,6 +73,17 @@ for file in glob.glob('**/logs/*/surefire.xml', recursive=True):
             match = re.match('(init|end)_per_(suite|group)', test.attrib['name'])
             if match is not None:
                 suite.remove(test)
+            elif test.get('group'):
+                # A suite may run the same case function in several groups, each
+                # supplying a different parametrisation. Report readers key on
+                # classname/name (Bamboo displays them as "classname name" and
+                # falls back to the suite name when classname is absent), so the
+                # group is appended to the suite name - 'suite:group' - rather
+                # than replacing it. Nested groups, which CT joins with dots, are
+                # joined with colons as well, so that the classname is never
+                # mistaken for a package qualified one.
+                classname = ':'.join([suite.attrib['name']] + test.attrib['group'].split('.'))
+                test.set('classname', classname)
     tree.write(file)
 
 sys.exit(ret)

@@ -87,7 +87,8 @@ DEB_PKG_LOCATION = {
     'disco': 'apt/ubuntu/disco/pool/main',
     'focal': 'apt/ubuntu/focal/pool/main',
     'impish': 'apt/ubuntu/impish/pool/main',
-    'jammy': 'apt/ubuntu/jammy/pool/main'
+    'jammy': 'apt/ubuntu/jammy/pool/main',
+    'noble': 'apt/ubuntu/noble/pool/main'
 }
 
 REPO_TYPE = {
@@ -100,6 +101,7 @@ REPO_TYPE = {
     'focal': 'deb',
     'impish': 'deb',
     'jammy': 'deb',
+    'noble': 'deb',
     'fedora-29-x86_64': 'rpm',
     'centos-7-x86_64': 'rpm'
 }

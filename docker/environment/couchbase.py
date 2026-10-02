@@ -20,6 +20,9 @@ CLIENT_PROXY_PORT = 11211
 ALL_COUCHBASE_PORTS = [
     8091, 8092, 8093, 8094, 11207, 11210, 11211, 18091, 18092, 18093
 ]
+# Number of vbuckets used in standard (not performance/stress) tests - must
+# divide the default 1024; the same value is used by onenv-ct.
+TEST_NUM_VBUCKETS = 64
 
 
 def _couchbase(cluster_name, num):
@@ -34,8 +37,14 @@ def config_entry(cluster_name, num, uid, docker_host=None):
     return '{0}:{1}'.format(hostname, CLIENT_PROXY_PORT)
 
 
-def _node_up(command, cluster_name, num, dns, image, uid, docker_host):
+def _node_up(command, cluster_name, num, dns, image, uid, docker_host,
+             num_vbuckets):
     publish = ALL_COUCHBASE_PORTS if docker_host else []
+
+    # Undocumented developer setting of Couchbase (read by ns_server when a
+    # bucket is created); must be the same on all nodes. Fewer vbuckets make
+    # the database start much faster on slow disks.
+    envs = {'COUCHBASE_NUM_VBUCKETS': num_vbuckets} if num_vbuckets else {}
 
     hostname = common.format_hostname(_couchbase(cluster_name, num), uid)
     node = docker.run(
@@ -46,6 +55,7 @@ def _node_up(command, cluster_name, num, dns, image, uid, docker_host):
         interactive=True,
         tty=True,
         dns_list=dns,
+        envs=envs,
         publish=publish,
         command=command,
         docker_host=docker_host)
@@ -102,7 +112,7 @@ def _cluster_nodes(containers, cluster_name, master_hostname, uid,
 
 
 def up(image, dns, uid, cluster_name, nodes, buckets={'onedata': 512},
-       cluster_ramsize=1024, docker_host=None):
+       cluster_ramsize=1024, docker_host=None, num_vbuckets=None):
     if docker_host:
         print('Starting couchbase on remote host: {0}@{1}:{2}'.format(
             docker_host['ssh_username'],
@@ -166,7 +176,7 @@ bash'''
 
     for num in range(nodes):
         node_out = _node_up(command, cluster_name, num, dns_servers, image, uid,
-                            docker_host)
+                            docker_host, num_vbuckets)
         common.merge(couchbase_output, node_out)
 
     containers = couchbase_output['docker_ids']

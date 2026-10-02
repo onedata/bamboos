@@ -1,18 +1,16 @@
 # coding=utf-8
-"""Author: Konrad Zemek
+"""Author: Konrad Zemek, Jakub Liput
 Copyright (C) 2015 ACK CYFRONET AGH
+Copyright (C) 2026 Onedata (onedata.org)
 This software is released under the MIT license cited in 'LICENSE.txt'
 
 Functions wrapping capabilities of docker binary.
-
-DEPRECATED: for new code, use docker_p3 instead, which is a Python 3 port.
 """
 
 import json
 import os
 import subprocess
 import sys
-from six import string_types
 
 PULL_DOCKER_IMAGE_RETRIES = 5
 
@@ -194,30 +192,6 @@ def logs(container, docker_host=None):
 
     return subprocess.check_output(cmd, universal_newlines=True,
                                    stderr=subprocess.STDOUT)
-
-
-def stop(containers, docker_host=None, stop_timeout=None, signal=None,
-         command_timeout=None, stderr=None):
-    cmd = ['docker', 'stop']
-
-    if signal is not None:
-        cmd.extend(['--signal', signal])
-
-    if stop_timeout is not None:
-        cmd.extend(['--timeout', str(stop_timeout)])
-
-    if isinstance(containers, str):
-        cmd.append(containers)
-    else:
-        cmd.extend(containers)
-
-    if docker_host:
-        cmd = wrap_in_ssh_call(cmd, docker_host)
-
-    if command_timeout is not None:
-        cmd = add_timeout_cmd(cmd, command_timeout)
-
-    subprocess.check_call(cmd, stderr=stderr)
 
 
 def remove(containers, docker_host=None, force=False,
@@ -406,9 +380,9 @@ def connect_docker_to_network(network, container):
 
 
 def format_command(docker_cmd, entry_point, docker_host):
-    if isinstance(entry_point, string_types) and docker_host is not None:
-        docker_cmd.extend(['sh', '-c', '\"' + entry_point + '\"'])
-    elif isinstance(entry_point, string_types):
+    if isinstance(entry_point, str) and docker_host is not None:
+        docker_cmd.extend(['sh', '-c', '"' + entry_point + '"'])
+    elif isinstance(entry_point, str):
         docker_cmd.extend(['sh', '-c', entry_point])
     elif isinstance(entry_point, list):
         docker_cmd.extend(entry_point)
