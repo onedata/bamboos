@@ -20,6 +20,9 @@ CLIENT_PROXY_PORT = 11211
 ALL_COUCHBASE_PORTS = [
     8091, 8092, 8093, 8094, 11207, 11210, 11211, 18091, 18092, 18093
 ]
+# Number of vbuckets used in standard (not performance/stress) tests - must
+# divide the default 1024; the same value is used by onenv-ct.
+TEST_NUM_VBUCKETS = 64
 
 
 def _couchbase(cluster_name, num):
@@ -34,8 +37,14 @@ def config_entry(cluster_name, num, uid, docker_host=None):
     return '{0}:{1}'.format(hostname, CLIENT_PROXY_PORT)
 
 
-def _node_up(command, cluster_name, num, dns, image, uid, docker_host):
+def _node_up(command, cluster_name, num, dns, image, uid, docker_host,
+             num_vbuckets):
     publish = ALL_COUCHBASE_PORTS if docker_host else []
+
+    # Undocumented developer setting of Couchbase (read by ns_server when a
+    # bucket is created); must be the same on all nodes. Fewer vbuckets make
+    # the database start much faster on slow disks.
+    envs = {'COUCHBASE_NUM_VBUCKETS': num_vbuckets} if num_vbuckets else {}
 
     hostname = common.format_hostname(_couchbase(cluster_name, num), uid)
     node = docker.run(
@@ -46,6 +55,7 @@ def _node_up(command, cluster_name, num, dns, image, uid, docker_host):
         interactive=True,
         tty=True,
         dns_list=dns,
+        envs=envs,
         publish=publish,
         command=command,
         docker_host=docker_host)
@@ -102,7 +112,7 @@ def _cluster_nodes(containers, cluster_name, master_hostname, uid,
 
 
 def up(image, dns, uid, cluster_name, nodes, buckets={'onedata': 512},
-       cluster_ramsize=1024, docker_host=None):
+       cluster_ramsize=1024, docker_host=None, num_vbuckets=None):
     if docker_host:
         print('Starting couchbase on remote host: {0}@{1}:{2}'.format(
             docker_host['ssh_username'],
@@ -113,17 +123,64 @@ def up(image, dns, uid, cluster_name, nodes, buckets={'onedata': 512},
     dns_servers, dns_output = dns_mod.maybe_start(dns, uid)
     couchbase_output = {}
 
-    command = '''/etc/init.d/couchbase-server start
+    command = '''
+
+. /lib/lsb/init-functions
+
+if [ "$(id -u)" != "0" ]; then
+    log_failure_msg "Must run as root"
+    exit 1
+fi
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/opt/couchbase/bin/couchbase-server
+PIDFILE=/opt/couchbase/var/lib/couchbase/couchbase-server.pid
+NODEFILE=/opt/couchbase/var/lib/couchbase/couchbase-server.node
+COOKIEFILE=/opt/couchbase/var/lib/couchbase/couchbase-server.cookie
+
+WAIT_TIMEOUT=60
+WAIT_INTERVAL=1
+
+test -f $DAEMON || exit 0
+
+start() {
+    touch $PIDFILE $NODEFILE $COOKIEFILE
+    chown couchbase $PIDFILE $NODEFILE $COOKIEFILE
+    cd /opt/couchbase/var/lib/couchbase
+    ulimit -n 40960
+    ulimit -c unlimited
+    ulimit -l unlimited
+    start-stop-daemon --start --quiet --oknodo --chdir "$PWD" --chuid couchbase --pidfile /dev/null \\
+        --startas /bin/sh  -- -c "$DAEMON -- -noinput -detached > /opt/couchbase/var/lib/couchbase/logs/start.log 2>&1"
+    errcode=$?
+    return $errcode
+}
+
+wait_running() {
+    time_elapsed=0
+    while [ $time_elapsed -lt $WAIT_TIMEOUT ]; do
+        if pidofproc -p $PIDFILE $DAEMON >/dev/null; then
+            return 0
+        fi
+        sleep $WAIT_INTERVAL
+        time_elapsed=$((time_elapsed+WAIT_INTERVAL))
+    done
+    return 1
+}
+
+start
+wait_running
+log_success_msg "Started couchbase-server"
+
 bash'''
 
     for num in range(nodes):
         node_out = _node_up(command, cluster_name, num, dns_servers, image, uid,
-                            docker_host)
+                            docker_host, num_vbuckets)
         common.merge(couchbase_output, node_out)
 
     containers = couchbase_output['docker_ids']
     common.merge(couchbase_output, dns_output)
-
     _wait_until(_ready, containers, docker_host)
 
     master_hostname = common.format_hostname(_couchbase(cluster_name, 0), uid)
@@ -134,9 +191,9 @@ bash'''
                                       "cluster-init", "-c",
                                       "{0}:{1}".format(master_hostname,
                                                        ADMIN_PORT),
-                                      "--cluster-init-username=admin",
-                                      "--cluster-init-password=password",
-                                      "--cluster-init-ramsize=" + str(
+                                      "--cluster-username=admin",
+                                      "--cluster-password=password",
+                                      "--cluster-ramsize=" + str(
                                           cluster_ramsize)],
                              stdout=sys.stderr)
 
@@ -152,6 +209,7 @@ bash'''
                                           "--bucket-ramsize=" + str(
                                               bucket_size),
                                           "--bucket-eviction-policy=fullEviction",
+                                          "--bucket-type=couchbase",
                                           "--wait"],
                                  stdout=sys.stderr)
 
